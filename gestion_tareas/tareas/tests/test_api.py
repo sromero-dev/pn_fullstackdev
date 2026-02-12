@@ -123,7 +123,7 @@ class TareaAPITestCase(APITestCase):
     def test_filtro_vencidas(self):
         """ Comprueba el filtro de tareas vencidas / caducadas """
         # Creo una tarea que venció hace años
-        Tarea.objects.create(familia=self.familia, titulo="Tarea vieja", fecha_vencimiento=date(2020, 1, 1))
+        Tarea.objects.create(familia=self.familia, titulo="Tarea vencida", fecha_vencimiento=date(2020, 1, 1))
         
         # Pido dichas tareas
         response = self.client.get(self.tarea_url, {'vencidas': 'true'})
