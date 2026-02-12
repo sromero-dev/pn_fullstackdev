@@ -1,0 +1,71 @@
+[
+  {
+    "model": "tareas.familia",
+    "pk": 1,
+    "fields": {
+      "nombre": "Trabajo"
+    }
+  },
+  {
+    "model": "tareas.familia",
+    "pk": 2,
+    "fields": {
+      "nombre": "Personal"
+    }
+  },
+  {
+    "model": "tareas.familia",
+    "pk": 3,
+    "fields": {
+      "nombre": "Estudio"
+    }
+  },
+  {
+    "model": "tareas.tarea",
+    "pk": 1,
+    "fields": {
+      "familia": 1,
+      "titulo": "Preparar informe trimestral",
+      "descripcion": "Revisar ventas y elaborar gráficos",
+      "estado": "pendiente",
+      "fecha_creacion": "2025-05-01T10:00:00Z",
+      "fecha_vencimiento": "2025-05-15"
+    }
+  },
+  {
+    "model": "tareas.tarea",
+    "pk": 2,
+    "fields": {
+      "familia": 1,
+      "titulo": "Reunión con equipo",
+      "descripcion": "Sala A - 10:00 AM",
+      "estado": "en_progreso",
+      "fecha_creacion": "2025-05-01T11:30:00Z",
+      "fecha_vencimiento": "2025-05-10"
+    }
+  },
+  {
+    "model": "tareas.tarea",
+    "pk": 3,
+    "fields": {
+      "familia": 2,
+      "titulo": "Comprar regalo cumpleaños",
+      "descripcion": "Buscar algo relacionado con fotografía",
+      "estado": "pendiente",
+      "fecha_creacion": "2025-05-02T08:15:00Z",
+      "fecha_vencimiento": "2025-05-12"
+    }
+  },
+  {
+    "model": "tareas.tarea",
+    "pk": 4,
+    "fields": {
+      "familia": 3,
+      "titulo": "Terminar curso de Django",
+      "descripcion": "Ver capítulo de REST Framework",
+      "estado": "completada",
+      "fecha_creacion": "2025-04-28T14:20:00Z",
+      "fecha_vencimiento": null
+    }
+  }
+]
