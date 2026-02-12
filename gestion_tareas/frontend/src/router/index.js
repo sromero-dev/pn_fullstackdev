@@ -4,6 +4,9 @@ import FamiliasView from "../views/FamiliasView.vue";
 import TareasView from "../views/TareasView.vue";
 import TareaDetalleView from "../views/TareaDetalleView.vue";
 import TareaFormView from "../views/TareaFormView.vue";
+import LoginView from "../views/LoginView.vue";
+import Callback from "../components/Callback.vue";
+import { apiClient } from "../services/api";
 
 // Definición de la lista de rutas
 const routes = [
@@ -46,14 +49,38 @@ const routes = [
     // También pasamos el ":id" como prop para facilitar la carga de datos
     props: true,
   },
+  {
+    path: "/login",
+    name: "Login",
+    component: LoginView,
+  },
+  {
+    path: "/auth/callback",
+    name: "Callback",
+    component: Callback,
+  },
 ];
 
 // Creación de la instancia del router
 const router = createRouter({
-  // Historial basado en la API de HTML5 (URLs limpias sin el símbolo #)
   history: createWebHistory(),
   routes,
 });
 
-// Exportamos el router para usarlo en el archivo main.js
+router.beforeEach(async (to, from, next) => {
+  const publicPages = ["/login", "/auth/callback"];
+  const authRequired = !publicPages.includes(to.path);
+
+  if (authRequired) {
+    try {
+      await apiClient.get("/auth/user/");
+      next();
+    } catch {
+      next("/login");
+    }
+  } else {
+    next();
+  }
+});
+
 export default router;

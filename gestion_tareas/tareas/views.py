@@ -1,31 +1,91 @@
 from rest_framework import viewsets, filters
 from django_filters.rest_framework import DjangoFilterBackend
+from dj_rest_auth.views import UserDetailsView, LogoutView
+from django.conf import settings
+from rest_framework.response import Response
+from rest_framework import status
 
 from .models import Tarea, Familia
-from .serializers import FamiliaSerializer
-from .serializers import TareaSerializer
+from .serializers import FamiliaSerializer, TareaSerializer
 from .filters import TareaFilter
+from .permissions import ReadOnlyForUsers
 
-# Create your views here.
+
+# ------------------------------------------------------------
+# FAMILIAS
+# ------------------------------------------------------------
 class FamiliaViewSet(viewsets.ModelViewSet):
     """
-    ViewSet para realizar CRUD completo de Familias.
+    - Lectura: todos los usuarios autenticados.
+    - Escritura: solo administradores.
     """
+    permission_classes = [ReadOnlyForUsers]
     queryset = Familia.objects.all()
     serializer_class = FamiliaSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['nombre']
     ordering_fields = ['nombre']
 
+
+# ------------------------------------------------------------
+# TAREAS
+# ------------------------------------------------------------
 class TareaViewSet(viewsets.ModelViewSet):
-  """
-  ViewSet para CRUD de Tareas.
-  Django rest framework genera automáticamente el CRUD al heredar de ModelViewSet.
-  Permite filtrar, buscar y ordenar las tareas.
-  """
-  queryset = Tarea.objects.select_related('familia').all() # Indica de donde se van a obtener los datos. Emplear `select_related` trae la información de las familias relacionadas a dicha tarea, dicho de otra manera, es como un JOIN de SQL
-  serializer_class = TareaSerializer # Especifica el serializador que convierta los objetos en JSON
-  filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter] # Indica los filtros que se van a usar: DjangoFilterBackend (filtro por campos exactos), SearchFilter (barra de búsqueda) y OrderingFilter (permite elegir el orden de resultado de las tareas)
-  filterset_class = TareaFilter # uso de'.filters.py', ver bibliografia sobre filtros personalizados.
-  search_fields = ['titulo', 'descripcion'] # Indica los campos por los cuales se puede buscar '?search=...'
-  ordering_fields = ['fecha_creacion', 'fecha_vencimiento', 'estado'] # Establece los campos por los cuales se puede ordenar la lista '?ordering=...'
+    """
+    - Lectura: todos los usuarios autenticados (ven TODAS las tareas).
+    - Escritura: solo administradores.
+    """
+    permission_classes = [ReadOnlyForUsers]
+    serializer_class = TareaSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_class = TareaFilter
+    search_fields = ['titulo', 'descripcion']
+    ordering_fields = ['fecha_creacion', 'fecha_vencimiento', 'estado']
+
+    def get_queryset(self):
+        # ✅ TODOS ven TODAS las tareas
+        return Tarea.objects.select_related('familia', 'usuario').all()
+
+    def perform_create(self, serializer):
+        # Asignar usuario autenticado (solo admin puede crear)
+        serializer.save(usuario=self.request.user)
+
+
+# ------------------------------------------------------------
+# LOGOUT PERSONALIZADO (borra cookies JWT)
+# ------------------------------------------------------------
+class CustomLogoutView(LogoutView):
+    def logout(self, request):
+        response = Response(
+            {"detail": "Sesión cerrada correctamente."},
+            status=status.HTTP_200_OK,
+        )
+        # Eliminar cookies JWT
+        response.delete_cookie(
+            settings.JWT_AUTH_COOKIE,
+            domain=settings.JWT_AUTH_COOKIE_DOMAIN,
+            path='/',
+            samesite=settings.JWT_AUTH_COOKIE_SAMESITE,
+        )
+        response.delete_cookie(
+            settings.JWT_AUTH_REFRESH_COOKIE,
+            domain=settings.JWT_AUTH_COOKIE_DOMAIN,
+            path='/',
+            samesite=settings.JWT_AUTH_COOKIE_SAMESITE,
+        )
+        # Eliminar cookies de sesión y CSRF
+        response.delete_cookie('sessionid', domain=settings.SESSION_COOKIE_DOMAIN, path='/')
+        response.delete_cookie('csrftoken', domain=settings.CSRF_COOKIE_DOMAIN, path='/')
+        return response
+
+
+# ------------------------------------------------------------
+# DETALLE DE USUARIO
+# ------------------------------------------------------------
+class CustomUserDetailsView(UserDetailsView):
+    permission_classes = [ReadOnlyForUsers]
+
+    def get(self, request, *args, **kwargs):
+        print("👤 Entrando a CustomUserDetailsView.get()")
+        print(f"Usuario autenticado: {request.user}")
+        return super().get(request, *args, **kwargs)

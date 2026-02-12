@@ -1,10 +1,11 @@
 import axios from "axios";
 
-const apiClient = axios.create({
+export const apiClient = axios.create({
   baseURL: "/api",
-  headers: {
-    "Content-Type": "application/json",
-  },
+  headers: { "Content-Type": "application/json" },
+  withCredentials: true,
+  xsrfCookieName: "csrftoken",
+  xsrfHeaderName: "X-CSRFToken",
 });
 
 export default {

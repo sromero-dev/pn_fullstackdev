@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2>Gestión de Familias</h2>
-    <button @click="abrirFormulario()">+ Nueva Familia</button>
+    <button v-if="esAdmin" @click="abrirFormulario()">+ Nueva Familia</button>
 
     <!-- Listado -->
     <FamiliaList
@@ -31,6 +31,10 @@ const familias = ref([]);
 const showForm = ref(false);
 const familiaSeleccionada = ref(null);
 const modoFormulario = ref("crear"); // 'crear' o 'editar'
+
+import authService from "../services/auth";
+
+const esAdmin = ref(false);
 
 // Obtener todas las familias
 const cargarFamilias = async () => {
@@ -93,5 +97,13 @@ const cerrarFormulario = () => {
   familiaSeleccionada.value = null;
 };
 
-onMounted(cargarFamilias);
+onMounted(async () => {
+  await cargarFamilias();
+  try {
+    const user = await authService.getUser();
+    esAdmin.value = user.rol === "admin";
+  } catch (error) {
+    console.error("Error al obtener usuario", error);
+  }
+});
 </script>

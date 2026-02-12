@@ -1,6 +1,16 @@
 from rest_framework import serializers
+from dj_rest_auth.serializers import UserDetailsSerializer
 from .models import Tarea, Familia
 from django.utils import timezone
+
+class CustomUserDetailsSerializer(UserDetailsSerializer):
+    rol = serializers.SerializerMethodField()
+
+    class Meta(UserDetailsSerializer.Meta):
+        fields = UserDetailsSerializer.Meta.fields + ('rol',)
+
+    def get_rol(self, obj):
+        return getattr(obj.perfil, 'rol', None)
 
 class TareaSerializer(serializers.ModelSerializer):
   """Serializer para el modelo Tarea."""
@@ -15,9 +25,10 @@ class TareaSerializer(serializers.ModelSerializer):
       'titulo', 'descripcion', 'estado', 
       'fecha_creacion', 'fecha_vencimiento'
     ]
-    read_only_fields = ['fecha_creacion'] # Define campos que no se pueden modificar
+    read_only_fields = ['fecha_creacion', 'usuario'] # Define campos que no se pueden modificar
 
   # ? DRF busca automáticamente métodos que empiecen con la palabra validate_ seguidos del nombre de un campo para aplicar reglas de negocio
+  # ! Salta error "POST /api/tareas/ HTTP/1.1" 400 78 por terminal por este método
   def validate_fecha_vencimiento(self, value):
         """Evita que un usuario cree una tarea que ya expiró"""
         if value and value < timezone.now().date():

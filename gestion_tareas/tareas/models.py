@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.auth.models import User
+from django.conf import settings
 
 # Create your models here.
 class Familia(models.Model):
@@ -35,6 +37,14 @@ class Tarea(models.Model):
   )
 
   titulo = models.CharField(max_length=200, verbose_name="Título") 
+  usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='tareas',
+        verbose_name='Usuario',
+        null=True,          
+        blank=True
+    )
   descripcion = models.TextField(blank=True, verbose_name="Descripción") # blank permite que el campo no sea obligatorio
   estado = models.CharField(
     max_length=20, 
@@ -61,3 +71,14 @@ class Tarea(models.Model):
   def __str__(self):
     """Define como se representa este objeto (Tarea) en el panel de administración como texto."""
     return f"{self.titulo} ({self.get_estado_display()})" # Empleo el getter generado por Django para campos 'choices' para obtener el nombre del estado
+  
+class Perfil(models.Model):
+    ROLES = [
+        ('admin', 'Administrador'),
+        ('user', 'Usuario'),
+    ]
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil')
+    rol = models.CharField(max_length=10, choices=ROLES, default='user')
+
+    def __str__(self):
+        return f"{self.user.email} - {self.rol}"

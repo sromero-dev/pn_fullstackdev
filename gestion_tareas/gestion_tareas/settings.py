@@ -37,12 +37,24 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites', # Requerido por allauth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google', # Proveedor Google
+    'corsheaders', # CORS
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
+    'rest_framework.authtoken', # Requerido por dj-rest-auth
     'rest_framework',
     'django_filters',
     'tareas',
 ]
 
+SITE_ID = 1
+
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -50,6 +62,17 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'gestion_tareas.middleware.LogCookiesMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173", 
+]
+CORS_ALLOW_CREDENTIALS = True   
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
 ]
 
 ROOT_URLCONF = 'gestion_tareas.urls'
@@ -122,6 +145,10 @@ STATIC_URL = 'static/'
 # Configuración del framework. También opcional pero recomendado según la documentación oficial.
 # Esta configuración habilita filtros, búsqueda, ordenamiento y paginación global.
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'tareas.authentication.DebugJWTCookieAuthentication',  
+        #'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.SearchFilter',
@@ -130,3 +157,51 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20
 }
+
+REST_AUTH = {
+    'USE_JWT': True, 
+    'USER_DETAILS_SERIALIZER': 'tareas.serializers.CustomUserDetailsSerializer',
+}
+
+# JWT settings
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+    }
+}
+
+# ------------------------------------------------------------
+# Configuración de django-allauth (sin warnings y compatible)
+# ------------------------------------------------------------
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_LOGIN_METHODS = {'email'}                    
+ACCOUNT_SIGNUP_FIELDS = ['email', 'password1', 'password2']
+# ------------------------------------------------------------
+# Configuración de dj-rest-auth + JWT + cookies
+# ------------------------------------------------------------
+REST_USE_JWT = True
+
+JWT_AUTH_COOKIE = 'access-token'
+JWT_AUTH_REFRESH_COOKIE = 'refresh-token'
+JWT_AUTH_COOKIE_USE_CSRF = False
+JWT_AUTH_COOKIE_ENFORCE_CSRF_ON_UNAUTHENTICATED = False
+JWT_AUTH_COOKIE_SAMESITE = 'Lax'
+JWT_AUTH_COOKIE_SECURE = False          # True solo en producción con HTTPS
+JWT_AUTH_COOKIE_DOMAIN = 'localhost'   
+
+# ------------------------------------------------------------
+# Cookies de sesión y CSRF con el mismo dominio
+# ------------------------------------------------------------
+SESSION_COOKIE_DOMAIN = 'localhost'
+CSRF_COOKIE_DOMAIN = 'localhost'
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'

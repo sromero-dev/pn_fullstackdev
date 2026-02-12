@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2>Gestión de Tareas</h2>
-    <router-link to="/tareas/nueva">+ Nueva Tarea</router-link>
+    <router-link v-if="esAdmin" to="/tareas/nueva">+ Nueva Tarea</router-link>
 
     <div class="filters">
       <select v-model="filtroEstado">
@@ -40,9 +40,11 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import TareaList from "../components/TareaList.vue";
 import api from "../services/api";
+import authService from "../services/auth";
 
 const router = useRouter();
 const tareas = ref([]);
+const esAdmin = ref(false);
 
 // Mantengo el estado de los filtros de forma reactiva
 const filtroEstado = ref("");
@@ -99,8 +101,16 @@ const eliminarTarea = async (id) => {
   }
 };
 
-// Cargo los datos por primera vez en cuanto el componente está listo
-onMounted(cargarTareas);
+onMounted(async () => {
+  // Obtener usuario para saber si es admin
+  try {
+    const user = await authService.getUser();
+    esAdmin.value = user.rol === "admin";
+  } catch (error) {
+    console.error("Error al obtener usuario", error);
+  }
+  await cargarTareas();
+});
 </script>
 
 <style scoped>
