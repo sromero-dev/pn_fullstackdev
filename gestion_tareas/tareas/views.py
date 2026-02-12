@@ -1,11 +1,22 @@
 from rest_framework import viewsets, filters
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import Tarea
+from .models import Tarea, Familia
+from .serializers import FamiliaSerializer
 from .serializers import TareaSerializer
 from .filters import TareaFilter
 
 # Create your views here.
+class FamiliaViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para realizar CRUD completo de Familias.
+    """
+    queryset = Familia.objects.all()
+    serializer_class = FamiliaSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['nombre']
+    ordering_fields = ['nombre']
+
 class TareaViewSet(viewsets.ModelViewSet):
   """
   ViewSet para CRUD de Tareas.

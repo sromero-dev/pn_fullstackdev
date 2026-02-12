@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Tarea
+from .models import Tarea, Familia
 from django.utils import timezone
 
 class TareaSerializer(serializers.ModelSerializer):
@@ -29,3 +29,9 @@ class TareaSerializer(serializers.ModelSerializer):
       if value not in dict(Tarea.Estado.choices): # Lo hace 'choices' por defecto pero es una capa de seguridad extra
           raise serializers.ValidationError("Estado no válido.")
       return value
+  
+class FamiliaSerializer(serializers.ModelSerializer):
+    """Serializer para el modelo Familia."""
+    class Meta:
+        model = Familia
+        fields = ['id', 'nombre']
