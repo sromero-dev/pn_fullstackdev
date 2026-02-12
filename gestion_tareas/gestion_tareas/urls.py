@@ -20,7 +20,7 @@ from rest_framework.routers import DefaultRouter
 from tareas.views import TareaViewSet
 
 router = DefaultRouter()
-router.register('tareas', TareaViewSet, basename='tareas')
+router.register('tareas', TareaViewSet, basename='tarea')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
