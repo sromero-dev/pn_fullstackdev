@@ -24,4 +24,4 @@ dist-ssr
 *.sw?
 
 .env
-E:\VSCode PROJECTS\PN_FullStackDev\gestion_tareas\frontend\.env
+gestion_tareas\frontend\.env
