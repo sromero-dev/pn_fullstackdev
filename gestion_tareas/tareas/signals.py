@@ -2,8 +2,9 @@ from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 from django.dispatch import receiver
 from .models import Perfil
+from decouple import config
 
-ADMIN_EMAIL = "diazsantiromero@gmail.com"
+ADMIN_EMAIL = config('ADMIN_EMAIL') # correo electronico del administrador
 
 @receiver(post_save, sender=User)
 def crear_o_guardar_perfil(sender, instance, created, **kwargs):
