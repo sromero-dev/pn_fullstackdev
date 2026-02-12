@@ -46,7 +46,7 @@ class Tarea(models.Model):
     auto_now_add=True, # Django asigna la fecha y hora actual al crear el objeto
     verbose_name="Fecha de creación"
   )
-  fecha_vencimiento = models.DateTimeField(
+  fecha_vencimiento = models.DateField(
     null=True, # Permite valor null en la bbdd
     blank=True, # Permite valor null en el panel de administración
     verbose_name="Fecha de vencimiento"
